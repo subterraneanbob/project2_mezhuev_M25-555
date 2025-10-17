@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 
-from .engine import welcome
+from .engine import run
 
 
 def main():
-    print("DB project is running!")
-
-    while welcome() != "exit":
-        pass
+    run()
 
 
 if __name__ == "__main__":
