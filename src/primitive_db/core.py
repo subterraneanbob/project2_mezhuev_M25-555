@@ -73,3 +73,17 @@ def drop_table(metadata: dict, table_name: str) -> dict:
     print(f'Таблица "{table_name}" успешно удалена.')
 
     return metadata
+
+
+def list_tables(metadata: dict):
+    """
+    Выводит список существующих таблиц или сообщение о том, что таблиц нет.
+
+    Args:
+        metadata (dict): Текущие метаданные
+    """
+
+    if metadata:
+        print(*[f"- {table}" for table in metadata], sep="\n")
+    else:
+        print("Таблицы отсутствуют.")
