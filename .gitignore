@@ -2,3 +2,6 @@ __pycache__/
 .venv
 dist/
 .ruff_cache/
+
+# Файл метаданных
+db_meta.json
