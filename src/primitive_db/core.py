@@ -50,3 +50,26 @@ def create_table(metadata: dict, table_name: str, columns: Iterable[str]) -> dic
     )
 
     return metadata
+
+
+def drop_table(metadata: dict, table_name: str) -> dict:
+    """
+    Удаляет информацию о таблице из метаданных. Если таблицы не существует,
+    выводит ошибку.
+
+    Args:
+        metadata (dict): Текущие метаданные
+        table_name (str): Название таблицы для удаления
+    Returns:
+        dict: Обновлённый словарь метаданных.
+    """
+
+    if table_name not in metadata:
+        print(f'Ошибка: Таблица "{table_name}" не существует.')
+        return metadata
+
+    del metadata[table_name]
+
+    print(f'Таблица "{table_name}" успешно удалена.')
+
+    return metadata
