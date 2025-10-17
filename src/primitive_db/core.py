@@ -22,6 +22,10 @@ def create_table(metadata: dict, table_name: str, columns: Iterable[str]) -> dic
         dict: Обновлённый словарь метаданных.
     """
 
+    if not table_name:
+        print(f'Ошибка: Недопустимое имя таблицы "{table_name}".')
+        return metadata
+
     if table_name in metadata:
         print(f'Ошибка: Таблица "{table_name}" уже существует.')
         return metadata
