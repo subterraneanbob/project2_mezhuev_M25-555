@@ -75,7 +75,7 @@ def get_command_from_user() -> ParsedCommand:
     """
 
     try:
-        user_input = prompt.string("Введите команду: ")
+        user_input = prompt.string("\nВведите команду: ")
         return ParsedCommand(user_input)
     except (KeyboardInterrupt, EOFError):
         return ParsedCommand(EXIT)
@@ -84,15 +84,13 @@ def get_command_from_user() -> ParsedCommand:
 def print_help():
     """Печатает справочную информацию по работе с программой."""
 
-    print("\n***Процесс работы с таблицей***")
-    print("Функции:")
+    print("\nКоманды для работы с таблицами:")
     for command, description in TABLE_COMMANDS.items():
         print(f"<command> {command} - {description}")
 
     print("\nОбщие команды:")
     for command, description in OTHER_COMMANDS.items():
         print(f"<command> {command} - {description}")
-    print()
 
 
 def run():
@@ -101,7 +99,6 @@ def run():
     выполняет её.
     """
 
-    print("***База данных***")
     print_help()
 
     while (cmd := get_command_from_user()) != EXIT:
