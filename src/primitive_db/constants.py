@@ -1,4 +1,6 @@
 DB_META_FILE = "db_meta.json"
+DB_TABLES_DIR = "data"
+JSON_EXT = ".json"
 
 ID_COLUMN_NAME = "ID"
 ID_COLUMN_DATA_TYPE = "int"
