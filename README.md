@@ -4,6 +4,8 @@
 
 После запуска программы, список команд для работы будет выведен на экран.
 
+[![asciicast](https://asciinema.org/a/0nIzU9IsvS9hE789bkoVuDHUo.svg)](https://asciinema.org/a/0nIzU9IsvS9hE789bkoVuDHUo)
+
 ### Общие команды
 
 - `help` - печатает справку по командам
