@@ -1,84 +1,23 @@
-import shlex
-
 import prompt
 
-from .constants import (
-    CREATE_TABLE,
-    DROP_TABLE,
-    EXIT,
-    HELP,
-    LIST_TABLES,
-    OTHER_COMMANDS,
-    TABLE_COMMANDS,
-)
+from .constants import OTHER_COMMANDS, TABLE_COMMANDS, Command
 from .core import create_table, drop_table, list_tables
+from .parser import parse_command
 from .utils import load_metadata, save_metadata
 
 
-class ParsedCommand:
+def get_command_from_user() -> str:
     """
-    Разбирает команду на составные части: первая часть - это имя команды,
-    остальные - аргументы.
-    """
-
-    def __init__(self, command_text: str):
-        try:
-            self.parts = shlex.split(command_text)
-        except ValueError:
-            self.parts = []
-
-    def __getitem__(self, key: int | slice):
-        if isinstance(key, slice):
-            return self.parts[key]
-
-        if -len(self.parts) <= key < len(self.parts):
-            return self.parts[key]
-
-        return ""
-
-    def __eq__(self, value) -> bool:
-        if isinstance(value, str):
-            return self.command == value
-
-        if isinstance(value, ParsedCommand):
-            return self.parts == value.parts
-
-        return False
-
-    def __str__(self) -> str:
-        return self.command
-
-    def __repr__(self) -> str:
-        return f'UserInput("{" ".join(self.parts)}")'
-
-    @property
-    def command(self) -> str:
-        return self[0]
-
-    @property
-    def first_arg(self) -> str:
-        return self[1]
-
-    @property
-    def args(self) -> list[str]:
-        return self[1:]
-
-
-def get_command_from_user() -> ParsedCommand:
-    """
-    Запрашивает команду у пользователя и возвращает её в виде объекта
-    ParsedCommand.
+    Запрашивает команду у пользователя и возвращает её в виде строки.
 
     Returns:
-        ParsedCommand: Пользовательская команда в виде
-            компонентов: команды и аргументов.
+        str: Пользовательская команда.
     """
 
     try:
-        user_input = prompt.string("\nВведите команду: ")
-        return ParsedCommand(user_input)
+        return prompt.string("\nВведите команду: ")
     except (KeyboardInterrupt, EOFError):
-        return ParsedCommand(EXIT)
+        return Command.EXIT
 
 
 def print_help():
@@ -101,18 +40,24 @@ def run():
 
     print_help()
 
-    while (cmd := get_command_from_user()) != EXIT:
+    while True:
+        cmd = get_command_from_user()
         metadata = load_metadata()
 
-        if cmd == CREATE_TABLE:
-            create_table(metadata, cmd.first_arg, cmd.args[1:])
-            save_metadata(metadata)
-        elif cmd == DROP_TABLE:
-            drop_table(metadata, cmd.first_arg)
-            save_metadata(metadata)
-        elif cmd == LIST_TABLES:
-            list_tables(metadata)
-        elif cmd == HELP:
-            print_help()
-        else:
-            print(f'Функции "{cmd}" нет. Попробуйте снова.')
+        match parse_command(cmd):
+            case (Command.CREATE_TABLE, table_name, columns):
+                create_table(metadata, table_name, columns)
+                save_metadata(metadata)
+            case (Command.DROP_TABLE, table_name):
+                drop_table(metadata, table_name)
+                save_metadata(metadata)
+            case Command.LIST_TABLES:
+                list_tables(metadata)
+            case Command.HELP:
+                print_help()
+            case Command.EXIT:
+                break
+            case None:
+                print("Синтаксическая ошибка. Проверьте правильность команды.")
+            case unknown_cmd:
+                print(f'Функции "{unknown_cmd}" нет. Попробуйте снова.')

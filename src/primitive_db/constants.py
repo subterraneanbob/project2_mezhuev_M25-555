@@ -8,22 +8,27 @@ ID_COLUMN_DATA_TYPE = "int"
 # Доступные типы данных
 SUPPORTED_DATA_TYPES = ("int", "str", "bool")
 
-# Команды для управления таблицами
-CREATE_TABLE = "create_table"
-LIST_TABLES = "list_tables"
-DROP_TABLE = "drop_table"
+
+# Доступные команды
+class Command:
+    # Команды для управления таблицами
+    CREATE_TABLE = "create_table"
+    LIST_TABLES = "list_tables"
+    DROP_TABLE = "drop_table"
+    # Общие команды
+    EXIT = "exit"
+    HELP = "help"
+
 
 TABLE_COMMANDS = {
-    f"{CREATE_TABLE} <имя_таблицы> <столбец1:тип> <столбец2:тип> ..": "создать таблицу",
-    f"{DROP_TABLE} <имя_таблицы>": "удалить таблицу",
-    LIST_TABLES: "показать список всех таблиц",
+    (
+        f"{Command.CREATE_TABLE} <имя_таблицы> <столбец1:тип> <столбец2:тип> .."
+    ): "создать таблицу",
+    f"{Command.DROP_TABLE} <имя_таблицы>": "удалить таблицу",
+    Command.LIST_TABLES: "показать список всех таблиц",
 }
 
-# Общие команды
-EXIT = "exit"
-HELP = "help"
-
 OTHER_COMMANDS = {
-    EXIT: "выход из программы",
-    HELP: "справочная информация",
+    Command.EXIT: "выход из программы",
+    Command.HELP: "справочная информация",
 }
