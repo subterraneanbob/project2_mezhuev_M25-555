@@ -1,5 +1,7 @@
 from collections.abc import Iterable
 
+from prettytable import PrettyTable
+
 from .constants import (
     ID_COLUMN_DATA_TYPE,
     ID_COLUMN_NAME,
@@ -151,3 +153,60 @@ def insert(
     print(f'Запись с ID={new_id} успешно добавлена в таблицу "{table_name}".')
 
     return table_data
+
+
+def select(
+    metadata: dict,
+    table_name: str,
+    table_data: dict,
+    where_clause: dict = None,
+):
+    """
+    Выводит все записи из данных таблицы. Если указано условие where_clause, то
+    записи фильтруются и выводятся только подходящие.
+
+    Args:
+        metadata (dict): Текущие метаданные
+        table_name (str): Название таблицы
+        table_data (dict): Текущие данные таблицы
+        where_clause (dict or None): Условия для фильтрации (если применимы)
+    """
+    if table_name not in metadata:
+        print(f'Ошибка: Таблица "{table_name}" не существует.')
+        return
+
+    table_metadata = metadata[table_name]
+    where_clause = where_clause or {}
+
+    for filter_column, filter_value in where_clause.items():
+        if filter_column not in table_metadata:
+            print(f'Ошибка: Недопустимое имя столбца "{filter_column}".')
+            return
+
+        type_name = table_metadata[filter_column]
+        data_type = SUPPORTED_DATA_TYPES[type_name]
+        if not isinstance(filter_value, data_type):
+            print(
+                f'Ошибка: Неверный тип данных для столбца "{filter_column}". '
+                f"Ожидается {type_name}."
+            )
+            return
+
+    table = PrettyTable()
+    table.field_names = list(table_metadata.keys())
+    id_type = SUPPORTED_DATA_TYPES[ID_COLUMN_DATA_TYPE]
+
+    for key, data in table_data.items():
+        for filter_column, filter_value in where_clause.items():
+            if filter_column == ID_COLUMN_NAME:
+                # ID хранятся в строковом виде - приводим к корректному типу
+                current_value = id_type(key)
+            else:
+                current_value = data[filter_column]
+
+            if current_value != filter_value:
+                break
+        else:
+            table.add_row([key, *data.values()])
+
+    print(table)

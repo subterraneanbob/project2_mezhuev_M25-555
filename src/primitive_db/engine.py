@@ -1,7 +1,7 @@
 import prompt
 
 from .constants import DATA_COMMANDS, OTHER_COMMANDS, TABLE_COMMANDS, Command
-from .core import create_table, drop_table, insert, list_tables
+from .core import create_table, drop_table, insert, list_tables, select
 from .parser import parse_command
 from .utils import load_metadata, load_table_data, save_metadata, save_table_data
 
@@ -49,6 +49,9 @@ def run():
         metadata = load_metadata()
 
         match parse_command(cmd):
+            case (Command.SELECT, table_name, where_clause):
+                table_data = load_table_data(table_name)
+                select(metadata, table_name, table_data, where_clause)
             case (Command.INSERT, table_name, values):
                 table_data = load_table_data(table_name)
                 new_table_data = insert(metadata, table_name, table_data, values)

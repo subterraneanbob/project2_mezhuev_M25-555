@@ -14,6 +14,7 @@ SUPPORTED_DATA_TYPES = {"int": int, "str": str, "bool": bool}
 class Command:
     # Команды для работы с данными
     INSERT = "insert"
+    SELECT = "select"
     # Команды для управления таблицами
     CREATE_TABLE = "create_table"
     LIST_TABLES = "list_tables"
@@ -27,6 +28,8 @@ class Command:
 class Keyword:
     INTO = "into"
     VALUES = "values"
+    FROM = "from"
+    WHERE = "where"
 
 
 # Литералы истина/ложь
@@ -39,7 +42,10 @@ PLUS_MINUS = "+-"
 
 DATA_COMMANDS = {
     f"{Command.INSERT} {Keyword.INTO} <имя_таблицы> {Keyword.VALUES} "
-    "(<значение1>, <значение2>, ...)": "создать запись"
+    "(<значение1>, <значение2>, ...)": "создать запись",
+    f"{Command.SELECT} {Keyword.INTO} <имя_таблицы> {Keyword.WHERE}"
+    " <столбец> = <значение>": "прочитать записи по условию",
+    f"{Command.SELECT} {Keyword.INTO} <имя_таблицы>": "прочитать все записи",
 }
 
 TABLE_COMMANDS = {

@@ -20,6 +20,7 @@ def _is_unknown(cmd: str) -> bool:
         Command.DROP_TABLE,
         Command.CREATE_TABLE,
         Command.INSERT,
+        Command.SELECT,
     )
 
 
@@ -96,6 +97,24 @@ def _convert_token(token: str) -> Optional[int | str | bool]:
             return _as_str(token, quote_ch)
 
 
+def _tokenize(user_input: str) -> Optional[list[str]]:
+    """
+    Разбивает входную строку на токены.
+
+    Args:
+        user_input (str): Строка для разбивки.
+    Returns:
+        list[str] or None: Возвращает список токенов или None, если строку не
+            получается разобрать (при ошибках синтаксиса).
+    """
+    try:
+        lexer = shlex.shlex(user_input, posix=False)
+        lexer.wordchars += PLUS_MINUS
+        return list(lexer)
+    except ValueError:
+        return None
+
+
 def _parse_values_clause(user_input: str) -> Optional[list[str]]:
     """
     Извлекает значения для вставки из команд типа "insert into <имя_таблицы> values
@@ -107,19 +126,13 @@ def _parse_values_clause(user_input: str) -> Optional[list[str]]:
         list[str] or None: Возвращает список значений или None, если строку не
             получается разобрать (при ошибках синтаксиса).
     """
-    try:
-        # Разбираем строку на токены
-        lexer = shlex.shlex(user_input, posix=False)
-        lexer.wordchars += PLUS_MINUS
-        # Отбрасываем "insert into <имя_таблицы>"
-        value_clause_parts = list(lexer)[3:]
-    except ValueError:
-        return None  # Неверный синтаксис
+    if not (value_clause_parts := _tokenize(user_input)):
+        return None
 
     # Извлекаем токены в скобках
     value_tokens = []
     match value_clause_parts:
-        case [Keyword.VALUES, "(", *value_tokens, ")"]:
+        case [_, _, _, Keyword.VALUES, "(", *value_tokens, ")"]:
             pass
         case _:
             return None
@@ -140,6 +153,28 @@ def _parse_values_clause(user_input: str) -> Optional[list[str]]:
         result.append(value)
 
     return result
+
+
+def _parse_where_clause(user_input: str) -> Optional[dict]:
+    """
+    Извлекает значения для фильтрации данных из команд типа
+    "select from <имя_таблицы> where <столбец> = <значение>".
+
+    Args:
+        user_input (str): Команда для обработки.
+    Returns:
+        dict or None: Возвращает словарь {столбец : значение} или None при
+            ошибках синтаксиса.
+    """
+    if not (where_clause_parts := _tokenize(user_input)):
+        return None
+
+    match where_clause_parts:
+        case [*_, Keyword.WHERE, column, "=", raw_value]:
+            if (value := _convert_token(raw_value)) is not None:
+                return {column: value}
+        case _:
+            return None
 
 
 def parse_command(user_input: str) -> Optional[str | tuple]:
@@ -173,6 +208,11 @@ def parse_command(user_input: str) -> Optional[str | tuple]:
             if (values := _parse_values_clause(user_input)) is None:
                 return None
             return cmd, table_name, values
+        case [Command.SELECT as cmd, Keyword.FROM, table_name]:
+            return cmd, table_name, None
+        case [Command.SELECT as cmd, Keyword.FROM, table_name, *_]:
+            if (where_clause := _parse_where_clause(user_input)) is not None:
+                return cmd, table_name, where_clause
         case [cmd, *_]:
             return cmd if _is_unknown(cmd) else None
         case _:
