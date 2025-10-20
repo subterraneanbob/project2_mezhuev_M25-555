@@ -1,9 +1,9 @@
 import prompt
 
-from .constants import OTHER_COMMANDS, TABLE_COMMANDS, Command
-from .core import create_table, drop_table, list_tables
+from .constants import DATA_COMMANDS, OTHER_COMMANDS, TABLE_COMMANDS, Command
+from .core import create_table, drop_table, insert, list_tables
 from .parser import parse_command
-from .utils import load_metadata, save_metadata
+from .utils import load_metadata, load_table_data, save_metadata, save_table_data
 
 
 def get_command_from_user() -> str:
@@ -22,6 +22,10 @@ def get_command_from_user() -> str:
 
 def print_help():
     """Печатает справочную информацию по работе с программой."""
+
+    print("\nКоманды для операций с данными:")
+    for command, description in DATA_COMMANDS.items():
+        print(f"<command> {command} - {description}")
 
     print("\nКоманды для работы с таблицами:")
     for command, description in TABLE_COMMANDS.items():
@@ -45,6 +49,10 @@ def run():
         metadata = load_metadata()
 
         match parse_command(cmd):
+            case (Command.INSERT, table_name, values):
+                table_data = load_table_data(table_name)
+                new_table_data = insert(metadata, table_name, table_data, values)
+                save_table_data(table_name, new_table_data)
             case (Command.CREATE_TABLE, table_name, columns):
                 create_table(metadata, table_name, columns)
                 save_metadata(metadata)

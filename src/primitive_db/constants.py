@@ -4,13 +4,16 @@ JSON_EXT = ".json"
 
 ID_COLUMN_NAME = "ID"
 ID_COLUMN_DATA_TYPE = "int"
+ID_INITIAL_VALUE = 1
 
 # Доступные типы данных
-SUPPORTED_DATA_TYPES = ("int", "str", "bool")
+SUPPORTED_DATA_TYPES = {"int": int, "str": str, "bool": bool}
 
 
 # Доступные команды
 class Command:
+    # Команды для работы с данными
+    INSERT = "insert"
     # Команды для управления таблицами
     CREATE_TABLE = "create_table"
     LIST_TABLES = "list_tables"
@@ -19,6 +22,25 @@ class Command:
     EXIT = "exit"
     HELP = "help"
 
+
+# Ключевые слова, которые используются в командах
+class Keyword:
+    INTO = "into"
+    VALUES = "values"
+
+
+# Литералы истина/ложь
+class Bool:
+    TRUE = "true"
+    FALSE = "false"
+
+
+PLUS_MINUS = "+-"
+
+DATA_COMMANDS = {
+    f"{Command.INSERT} {Keyword.INTO} <имя_таблицы> {Keyword.VALUES} "
+    "(<значение1>, <значение2>, ...)": "создать запись"
+}
 
 TABLE_COMMANDS = {
     (
