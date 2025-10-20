@@ -53,8 +53,11 @@ def load_table_data(table_name: str) -> dict:
     """
     table_data_path = _create_table_data_filepath(table_name)
 
-    with open(table_data_path, "r", encoding="utf-8") as json_file:
-        return json.load(json_file)
+    try:
+        with open(table_data_path, "r", encoding="utf-8") as json_file:
+            return json.load(json_file)
+    except FileNotFoundError:
+        return {}
 
 
 def save_table_data(table_name: str, data: dict):
