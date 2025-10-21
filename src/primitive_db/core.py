@@ -11,7 +11,9 @@ from .constants import (
 )
 
 
-def _check_clause(metadata: dict, table_name: str, clause: dict) -> bool:
+def _check_clause(
+    metadata: dict, table_name: str, clause: dict, show_column_index: bool = False
+) -> bool:
     """
     Проверяет пары {столбец : значение} на соответствие схеме данных таблицы.
     Выводит сообщение при ошибке.
@@ -20,10 +22,11 @@ def _check_clause(metadata: dict, table_name: str, clause: dict) -> bool:
         metadata (dict): Текущие метаданные
         table_name (str): Название таблицы
         clause (dict): Словарь
+        show_column_index (bool, optional): Указывать номер столбца в тексте ошибки
     """
     table_metadata = metadata[table_name]
 
-    for column, value in clause.items():
+    for i, (column, value) in enumerate(clause.items(), start=1):
         if column not in table_metadata:
             print(f'Ошибка: Недопустимое имя столбца "{column}".')
             return False
@@ -31,8 +34,9 @@ def _check_clause(metadata: dict, table_name: str, clause: dict) -> bool:
         type_name = table_metadata[column]
         data_type = SUPPORTED_DATA_TYPES[type_name]
         if not isinstance(value, data_type):
+            column_index = f"#{i} " if show_column_index else ""
             print(
-                f'Ошибка: Неверный тип данных для столбца "{column}". '
+                f'Ошибка: Неверный тип данных для столбца {column_index}"{column}". '
                 f"Ожидается {type_name}."
             )
             return False
@@ -189,20 +193,12 @@ def insert(
         print("Ошибка: Передано неверное количество значений.")
         return table_data
 
-    new_entry = dict.fromkeys(columns)
-    for i, (value, column) in enumerate(zip(values, columns), start=1):
-        type_name = table_metadata[column]
-        data_type = SUPPORTED_DATA_TYPES[type_name]
-        if not isinstance(value, data_type):
-            print(
-                f'Ошибка: Неверный тип данных для столбца "{column}" ({i}). '
-                f"Ожидается {type_name}."
-            )
-            return table_data
-        new_entry[column] = value
+    new_entry = dict(zip(columns, values))
+    if not _check_clause(metadata, table_name, new_entry, show_column_index=True):
+        return table_data
 
     new_id = (
-        max(int(key) for key in table_data.keys()) + 1
+        max(ID_COLUMN_DATA_TYPE(key) for key in table_data.keys()) + 1
         if table_data
         else ID_INITIAL_VALUE
     )
@@ -233,38 +229,15 @@ def select(
         print(f'Ошибка: Таблица "{table_name}" не существует.')
         return
 
-    table_metadata = metadata[table_name]
     where_clause = where_clause or {}
-
-    for filter_column, filter_value in where_clause.items():
-        if filter_column not in table_metadata:
-            print(f'Ошибка: Недопустимое имя столбца "{filter_column}".')
-            return
-
-        type_name = table_metadata[filter_column]
-        data_type = SUPPORTED_DATA_TYPES[type_name]
-        if not isinstance(filter_value, data_type):
-            print(
-                f'Ошибка: Неверный тип данных для столбца "{filter_column}". '
-                f"Ожидается {type_name}."
-            )
-            return
+    if not _check_clause(metadata, table_name, where_clause):
+        return
 
     table = PrettyTable()
-    table.field_names = list(table_metadata.keys())
+    table.field_names = list(metadata[table_name].keys())
 
-    for key, data in table_data.items():
-        for filter_column, filter_value in where_clause.items():
-            if filter_column == ID_COLUMN_NAME:
-                # ID хранятся в строковом виде - приводим к корректному типу
-                current_value = ID_COLUMN_DATA_TYPE(key)
-            else:
-                current_value = data[filter_column]
-
-            if current_value != filter_value:
-                break
-        else:
-            table.add_row([key, *data.values()])
+    for key in _filter_ids(table_data, where_clause):
+        table.add_row([key, *table_data[key].values()])
 
     print(table)
 
@@ -304,8 +277,7 @@ def update(
     ):
         return table_data
 
-    keys_to_update = _filter_ids(table_data, where_clause)
-    for key in keys_to_update:
+    for key in _filter_ids(table_data, where_clause):
         table_data[key] |= set_clause
         print(f'Запись с ID={key} в таблице "{table_name}" успешно обновлена.')
 
@@ -337,8 +309,7 @@ def delete(
     if not _check_clause(metadata, table_name, where_clause):
         return table_data
 
-    keys_to_delete = _filter_ids(table_data, where_clause)
-    for key in keys_to_delete:
+    for key in _filter_ids(table_data, where_clause):
         del table_data[key]
         print(f'Запись с ID={key} успешно удалена из таблицы "{table_name}".')
 
