@@ -307,8 +307,39 @@ def update(
     keys_to_update = _filter_ids(table_data, where_clause)
     for key in keys_to_update:
         table_data[key] |= set_clause
+        print(f'Запись с ID={key} в таблице "{table_name}" успешно обновлена.')
 
-    for key in keys_to_update:
-        print(f"Запись с ID={key} в таблице {table_name} успешно обновлена.")
+    return table_data
+
+
+def delete(
+    metadata: dict,
+    table_name: str,
+    table_data: dict,
+    where_clause: dict,
+) -> dict:
+    """
+    Удаляет записи из указанной таблицы по условию.
+
+    Args:
+        metadata (dict): Текущие метаданные
+        table_name (str): Название таблицы
+        table_data (dict): Текущие данные таблицы
+        where_clause (dict): Условия для выбора записей для обновления.
+    Returns:
+        dict: Обновлённые данные таблицы.
+    """
+
+    if table_name not in metadata:
+        print(f'Ошибка: Таблица "{table_name}" не существует.')
+        return table_data
+
+    if not _check_clause(metadata, table_name, where_clause):
+        return table_data
+
+    keys_to_delete = _filter_ids(table_data, where_clause)
+    for key in keys_to_delete:
+        del table_data[key]
+        print(f'Запись с ID={key} успешно удалена из таблицы "{table_name}".')
 
     return table_data

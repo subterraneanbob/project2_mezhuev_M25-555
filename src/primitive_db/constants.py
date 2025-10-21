@@ -19,6 +19,7 @@ class Command:
     INSERT = "insert"
     SELECT = "select"
     UPDATE = "update"
+    DELETE = "delete"
     # Команды для управления таблицами
     CREATE_TABLE = "create_table"
     LIST_TABLES = "list_tables"
@@ -53,6 +54,8 @@ DATA_COMMANDS = {
     f"{Command.SELECT} {Keyword.INTO} <имя_таблицы>": "прочитать все записи",
     f"{Command.UPDATE} <имя_таблицы> {Keyword.SET} <столбец> = <новое_значение> "
     f"{Keyword.WHERE} <столбец_условия> = <значение_условия>": "обновить запись",
+    f"{Command.DELETE} {Keyword.FROM} <имя_таблицы> {Keyword.WHERE} "
+    "<столбец> = <значение>": "удалить запись",
 }
 
 TABLE_COMMANDS = {

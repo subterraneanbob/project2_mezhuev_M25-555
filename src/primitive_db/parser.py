@@ -240,6 +240,9 @@ def parse_command(user_input: str) -> Optional[str | tuple]:
             if (set_clause := _parse_set_clause(user_input)) is not None:
                 if (where_clause := _parse_where_clause(user_input)) is not None:
                     return cmd, table_name, set_clause, where_clause
+        case [Command.DELETE as cmd, Keyword.FROM, table_name, *_]:
+            if (where_clause := _parse_where_clause(user_input)) is not None:
+                return cmd, table_name, where_clause
         case [cmd, *_]:
             return cmd if _is_unknown(cmd) else None
         case _:
