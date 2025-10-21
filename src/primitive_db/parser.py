@@ -21,6 +21,7 @@ def _is_unknown(cmd: str) -> bool:
         Command.CREATE_TABLE,
         Command.INSERT,
         Command.SELECT,
+        Command.UPDATE,
     )
 
 
@@ -177,6 +178,28 @@ def _parse_where_clause(user_input: str) -> Optional[dict]:
             return None
 
 
+def _parse_set_clause(user_input: str) -> Optional[dict]:
+    """
+    Извлекает значения для обновления данных из команд типа "update <имя_таблицы>
+    set <столбец> = <новое_значение> where <столбец_условия> = <значение_условия>".
+
+    Args:
+        user_input (str): Команда для обработки.
+    Returns:
+        dict or None: Возвращает словарь {столбец : значение} или None при
+            ошибках синтаксиса.
+    """
+    if not (set_clause_parts := _tokenize(user_input)):
+        return None
+
+    match set_clause_parts:
+        case [_, _, Keyword.SET, column, "=", raw_value, *_]:
+            if (value := _convert_token(raw_value)) is not None:
+                return {column: value}
+        case _:
+            return None
+
+
 def parse_command(user_input: str) -> Optional[str | tuple]:
     """
     Превращает строку, введённую пользователем, в команду с определёнными
@@ -213,6 +236,10 @@ def parse_command(user_input: str) -> Optional[str | tuple]:
         case [Command.SELECT as cmd, Keyword.FROM, table_name, *_]:
             if (where_clause := _parse_where_clause(user_input)) is not None:
                 return cmd, table_name, where_clause
+        case [Command.UPDATE as cmd, table_name, *_]:
+            if (set_clause := _parse_set_clause(user_input)) is not None:
+                if (where_clause := _parse_where_clause(user_input)) is not None:
+                    return cmd, table_name, set_clause, where_clause
         case [cmd, *_]:
             return cmd if _is_unknown(cmd) else None
         case _:
