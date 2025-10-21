@@ -343,3 +343,28 @@ def delete(
         print(f'Запись с ID={key} успешно удалена из таблицы "{table_name}".')
 
     return table_data
+
+
+def info(metadata: dict, table_name: str, table_data: dict):
+    """
+    Выводит информацию о таблице: название, схема данных (колонки и типы данных),
+    количество записей.
+
+    Args:
+        metadata (dict): Текущие метаданные
+        table_name (str): Название таблицы
+        table_data (dict): Текущие данные таблицы
+    """
+
+    if table_name not in metadata:
+        print(f'Ошибка: Таблица "{table_name}" не существует.')
+        return
+
+    table_metadata = metadata[table_name]
+    columns = ", ".join(
+        f"{column}:{data_type}" for column, data_type in table_metadata.items()
+    )
+
+    print(f"Таблица: {table_name}")
+    print(f"Столбцы: {columns}")
+    print(f"Количество записей: {len(table_data)}")

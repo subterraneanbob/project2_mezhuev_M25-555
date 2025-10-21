@@ -24,6 +24,7 @@ class Command:
     CREATE_TABLE = "create_table"
     LIST_TABLES = "list_tables"
     DROP_TABLE = "drop_table"
+    INFO = "info"
     # Общие команды
     EXIT = "exit"
     HELP = "help"
@@ -64,6 +65,7 @@ TABLE_COMMANDS = {
     ): "создать таблицу",
     f"{Command.DROP_TABLE} <имя_таблицы>": "удалить таблицу",
     Command.LIST_TABLES: "показать список всех таблиц",
+    f"{Command.INFO} <имя_таблицы>": "вывести информацию о таблице",
 }
 
 OTHER_COMMANDS = {

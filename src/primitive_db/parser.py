@@ -22,6 +22,8 @@ def _is_unknown(cmd: str) -> bool:
         Command.INSERT,
         Command.SELECT,
         Command.UPDATE,
+        Command.DELETE,
+        Command.INFO,
     )
 
 
@@ -243,6 +245,8 @@ def parse_command(user_input: str) -> Optional[str | tuple]:
         case [Command.DELETE as cmd, Keyword.FROM, table_name, *_]:
             if (where_clause := _parse_where_clause(user_input)) is not None:
                 return cmd, table_name, where_clause
+        case [Command.INFO as cmd, table_name]:
+            return cmd, table_name
         case [cmd, *_]:
             return cmd if _is_unknown(cmd) else None
         case _:
