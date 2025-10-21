@@ -120,6 +120,10 @@ info users
 
 В этом разделе перечислены команды, позволяющие выполнять набор CRUD-операций (Create, Read, Update, Delete) над данными из таблиц.
 
+Работа с данными показана в демонстрации ниже.
+
+[![asciicast](https://asciinema.org/a/z6SVyyZdMVFofmCZjfE4wH0Xt.svg)](https://asciinema.org/a/z6SVyyZdMVFofmCZjfE4wH0Xt)
+
 #### Добавление новых записей
 
 Для добавления новых записей используется команда `insert`:
