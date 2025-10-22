@@ -45,6 +45,9 @@ class Bool:
     FALSE = "false"
 
 
+DROP_TABLE_ACTION = "удаление таблицы"
+DELETE_ACTION = "удаление записей"
+
 PLUS_MINUS = "+-"
 
 DATA_COMMANDS = {

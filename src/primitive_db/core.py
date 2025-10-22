@@ -3,13 +3,15 @@ from collections.abc import Iterable
 from prettytable import PrettyTable
 
 from .constants import (
+    DELETE_ACTION,
+    DROP_TABLE_ACTION,
     ID_COLUMN_DATA_TYPE,
     ID_COLUMN_DATA_TYPE_STR,
     ID_COLUMN_NAME,
     ID_INITIAL_VALUE,
     SUPPORTED_DATA_TYPES,
 )
-from .decorators import handle_db_errors
+from .decorators import confirm_action, handle_db_errors
 
 
 def _check_clause(
@@ -128,6 +130,7 @@ def create_table(metadata: dict, table_name: str, columns: Iterable[str]) -> dic
 
 
 @handle_db_errors
+@confirm_action(DROP_TABLE_ACTION)
 def drop_table(metadata: dict, table_name: str) -> dict:
     """
     Удаляет информацию о таблице из метаданных. Если таблицы не существует,
@@ -274,6 +277,7 @@ def update(
 
 
 @handle_db_errors
+@confirm_action(DELETE_ACTION)
 def delete(
     metadata: dict,
     table_name: str,

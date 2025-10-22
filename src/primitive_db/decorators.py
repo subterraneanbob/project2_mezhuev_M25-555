@@ -1,5 +1,7 @@
 from functools import wraps
 
+import prompt
+
 
 def handle_db_errors(func):
     """
@@ -34,3 +36,27 @@ def handle_file_errors(func):
             return {}
 
     return wrapper
+
+
+def confirm_action(action_name: str):
+    """
+    Декоратор для подтверждения действия пользователем.
+
+    Args:
+        action_name (str): Название действия, которое отобразится при подтверждении.
+    """
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            response = prompt.character(
+                f'Вы уверены, что хотите выполнить "{action_name}"? [y/N]: ',
+                empty=True,
+            )
+
+            if response == "y":
+                return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
