@@ -2,8 +2,10 @@ import json
 import os
 
 from .constants import DB_META_FILE, DB_TABLES_DIR, JSON_EXT
+from .decorators import handle_file_errors
 
 
+@handle_file_errors
 def load_metadata(filepath: str = DB_META_FILE) -> dict:
     """
     Загружает метаданные о существующих таблицах. Если файл не существует, то
@@ -14,12 +16,8 @@ def load_metadata(filepath: str = DB_META_FILE) -> dict:
     Returns:
         dict: Словарь, содержащий текущие метаданные.
     """
-
-    try:
-        with open(filepath, "r", encoding="utf-8") as json_file:
-            return json.load(json_file)
-    except FileNotFoundError:
-        return {}
+    with open(filepath, "r", encoding="utf-8") as json_file:
+        return json.load(json_file)
 
 
 def save_metadata(data: dict, filepath: str = DB_META_FILE):
@@ -42,6 +40,7 @@ def _create_table_data_filepath(table_name: str, datapath: str = DB_TABLES_DIR):
     return os.path.join(datapath, table_name + JSON_EXT)
 
 
+@handle_file_errors
 def load_table_data(table_name: str) -> dict:
     """
     Загружает данные для указанной таблицы.
@@ -53,11 +52,8 @@ def load_table_data(table_name: str) -> dict:
     """
     table_data_path = _create_table_data_filepath(table_name)
 
-    try:
-        with open(table_data_path, "r", encoding="utf-8") as json_file:
-            return json.load(json_file)
-    except FileNotFoundError:
-        return {}
+    with open(table_data_path, "r", encoding="utf-8") as json_file:
+        return json.load(json_file)
 
 
 def save_table_data(table_name: str, data: dict):

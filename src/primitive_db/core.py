@@ -9,6 +9,7 @@ from .constants import (
     ID_INITIAL_VALUE,
     SUPPORTED_DATA_TYPES,
 )
+from .decorators import handle_db_errors
 
 
 def _check_clause(
@@ -72,6 +73,7 @@ def _filter_ids(table_data: dict, where_clause: dict) -> list:
     return filtered_keys
 
 
+@handle_db_errors
 def create_table(metadata: dict, table_name: str, columns: Iterable[str]) -> dict:
     """
     Добавляет новую таблицу с указанными столбцами в словарь метаданных, если
@@ -125,6 +127,7 @@ def create_table(metadata: dict, table_name: str, columns: Iterable[str]) -> dic
     return metadata
 
 
+@handle_db_errors
 def drop_table(metadata: dict, table_name: str) -> dict:
     """
     Удаляет информацию о таблице из метаданных. Если таблицы не существует,
@@ -137,12 +140,7 @@ def drop_table(metadata: dict, table_name: str) -> dict:
         dict: Обновлённый словарь метаданных.
     """
 
-    if table_name not in metadata:
-        print(f'Ошибка: Таблица "{table_name}" не существует.')
-        return metadata
-
     del metadata[table_name]
-
     print(f'Таблица "{table_name}" успешно удалена.')
 
     return metadata
@@ -162,6 +160,7 @@ def list_tables(metadata: dict):
         print("Таблицы отсутствуют.")
 
 
+@handle_db_errors
 def insert(
     metadata: dict,
     table_name: str,
@@ -181,10 +180,6 @@ def insert(
     Returns:
         dict: Обновлённые данные таблицы.
     """
-
-    if table_name not in metadata:
-        print(f'Ошибка: Таблица "{table_name}" не существует.')
-        return table_data
 
     table_metadata = metadata[table_name]
     columns = [column for column in table_metadata if column != ID_COLUMN_NAME]
@@ -209,6 +204,7 @@ def insert(
     return table_data
 
 
+@handle_db_errors
 def select(
     metadata: dict,
     table_name: str,
@@ -225,10 +221,6 @@ def select(
         table_data (dict): Текущие данные таблицы
         where_clause (dict or None): Условия для фильтрации (если применимы)
     """
-    if table_name not in metadata:
-        print(f'Ошибка: Таблица "{table_name}" не существует.')
-        return
-
     where_clause = where_clause or {}
     if not _check_clause(metadata, table_name, where_clause):
         return
@@ -242,6 +234,7 @@ def select(
     print(table)
 
 
+@handle_db_errors
 def update(
     metadata: dict,
     table_name: str,
@@ -263,10 +256,6 @@ def update(
         dict: Обновлённые данные таблицы.
     """
 
-    if table_name not in metadata:
-        print(f'Ошибка: Таблица "{table_name}" не существует.')
-        return table_data
-
     if ID_COLUMN_NAME in set_clause:
         print(f"Ошибка: значение первичного ключа {ID_COLUMN_NAME} нельзя обновить.")
         return table_data
@@ -284,6 +273,7 @@ def update(
     return table_data
 
 
+@handle_db_errors
 def delete(
     metadata: dict,
     table_name: str,
@@ -302,10 +292,6 @@ def delete(
         dict: Обновлённые данные таблицы.
     """
 
-    if table_name not in metadata:
-        print(f'Ошибка: Таблица "{table_name}" не существует.')
-        return table_data
-
     if not _check_clause(metadata, table_name, where_clause):
         return table_data
 
@@ -316,6 +302,7 @@ def delete(
     return table_data
 
 
+@handle_db_errors
 def info(metadata: dict, table_name: str, table_data: dict):
     """
     Выводит информацию о таблице: название, схема данных (колонки и типы данных),
@@ -326,10 +313,6 @@ def info(metadata: dict, table_name: str, table_data: dict):
         table_name (str): Название таблицы
         table_data (dict): Текущие данные таблицы
     """
-
-    if table_name not in metadata:
-        print(f'Ошибка: Таблица "{table_name}" не существует.')
-        return
 
     table_metadata = metadata[table_name]
     columns = ", ".join(
