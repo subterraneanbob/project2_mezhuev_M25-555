@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 
 from prettytable import PrettyTable
 
@@ -215,6 +215,7 @@ def select(
     table_name: str,
     table_data: dict,
     where_clause: dict = None,
+    cacher: Callable = None,
 ):
     """
     Выводит все записи из данных таблицы. Если указано условие where_clause, то
@@ -225,16 +226,27 @@ def select(
         table_name (str): Название таблицы
         table_data (dict): Текущие данные таблицы
         where_clause (dict or None): Условия для фильтрации (если применимы)
+        cacher (Callable or None): Функция, которая извлекает данные из кэша по ключу
     """
+
+    def _get_from_db() -> PrettyTable:
+        table = PrettyTable()
+        table.field_names = list(metadata[table_name].keys())
+
+        for key in _filter_ids(table_data, where_clause):
+            table.add_row([key, *table_data[key].values()])
+
+        return table
+
     where_clause = where_clause or {}
     if not _check_clause(metadata, table_name, where_clause):
         return
 
-    table = PrettyTable()
-    table.field_names = list(metadata[table_name].keys())
-
-    for key in _filter_ids(table_data, where_clause):
-        table.add_row([key, *table_data[key].values()])
+    if cacher:
+        key = (table_name, frozenset(where_clause.items()))
+        table = cacher(key, _get_from_db)
+    else:
+        table = _get_from_db()
 
     print(table)
 
@@ -328,3 +340,27 @@ def info(metadata: dict, table_name: str, table_data: dict):
     print(f"Таблица: {table_name}")
     print(f"Столбцы: {columns}")
     print(f"Количество записей: {len(table_data)}")
+
+
+def create_cacher():
+    """
+    Создаёт функцию для кэширования, которая принимает ключ и функцию для
+    генерации значения, если по ключу в кэше нет данных. Также добавляет
+    атрибут для очистки всего кэша (invalidate).
+    """
+    cached_data = {}
+
+    def cache_result(key, value_func):
+        if key in cached_data:
+            return cached_data[key]
+
+        value = value_func()
+        cached_data[key] = value
+
+        return value
+
+    def invalidate():
+        cached_data.clear()
+
+    cache_result.invalidate = invalidate
+    return cache_result

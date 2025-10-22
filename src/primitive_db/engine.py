@@ -2,6 +2,7 @@ import prompt
 
 from .constants import DATA_COMMANDS, OTHER_COMMANDS, TABLE_COMMANDS, Command
 from .core import (
+    create_cacher,
     create_table,
     delete,
     drop_table,
@@ -53,6 +54,9 @@ def run():
 
     print_help()
 
+    cacher = create_cacher()
+    invalidate_cache = cacher.invalidate
+
     while True:
         cmd = get_command_from_user()
         metadata = load_metadata()
@@ -62,10 +66,12 @@ def run():
                 table_data = load_table_data(table_name)
                 info(metadata, table_name, table_data)
             case (Command.DELETE, table_name, where_clause):
+                invalidate_cache()
                 table_data = load_table_data(table_name)
                 new_table_data = delete(metadata, table_name, table_data, where_clause)
                 save_table_data(table_name, new_table_data)
             case (Command.UPDATE, table_name, set_clause, where_clause):
+                invalidate_cache()
                 table_data = load_table_data(table_name)
                 new_table_data = update(
                     metadata, table_name, table_data, set_clause, where_clause
@@ -73,15 +79,18 @@ def run():
                 save_table_data(table_name, new_table_data)
             case (Command.SELECT, table_name, where_clause):
                 table_data = load_table_data(table_name)
-                select(metadata, table_name, table_data, where_clause)
+                select(metadata, table_name, table_data, where_clause, cacher)
             case (Command.INSERT, table_name, values):
+                invalidate_cache()
                 table_data = load_table_data(table_name)
                 new_table_data = insert(metadata, table_name, table_data, values)
                 save_table_data(table_name, new_table_data)
             case (Command.CREATE_TABLE, table_name, columns):
+                invalidate_cache()
                 create_table(metadata, table_name, columns)
                 save_metadata(metadata)
             case (Command.DROP_TABLE, table_name):
+                invalidate_cache()
                 drop_table(metadata, table_name)
                 save_metadata(metadata)
             case Command.LIST_TABLES:
