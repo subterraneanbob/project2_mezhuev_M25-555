@@ -11,7 +11,7 @@ from .constants import (
     ID_INITIAL_VALUE,
     SUPPORTED_DATA_TYPES,
 )
-from .decorators import confirm_action, handle_db_errors
+from .decorators import confirm_action, handle_db_errors, log_time
 
 
 def _check_clause(
@@ -163,6 +163,7 @@ def list_tables(metadata: dict):
         print("Таблицы отсутствуют.")
 
 
+@log_time
 @handle_db_errors
 def insert(
     metadata: dict,
@@ -207,6 +208,7 @@ def insert(
     return table_data
 
 
+@log_time
 @handle_db_errors
 def select(
     metadata: dict,
