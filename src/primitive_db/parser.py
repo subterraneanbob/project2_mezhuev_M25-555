@@ -92,7 +92,7 @@ def _convert_token(token: str) -> Optional[int | str | bool]:
         return None
 
     match token[0]:
-        case "t" | "f":
+        case ch if ch in (Bool.TRUE[0], Bool.FALSE[0]):
             return _as_bool(token)
         case ch if ch.isdigit() or ch in PLUS_MINUS:
             return _as_int(token)
@@ -129,12 +129,10 @@ def _parse_values_clause(user_input: str) -> Optional[list[str]]:
         list[str] or None: Возвращает список значений или None, если строку не
             получается разобрать (при ошибках синтаксиса).
     """
-    if not (value_clause_parts := _tokenize(user_input)):
-        return None
 
     # Извлекаем токены в скобках
     value_tokens = []
-    match value_clause_parts:
+    match _tokenize(user_input):
         case [_, _, _, Keyword.VALUES, "(", *value_tokens, ")"]:
             pass
         case _:
@@ -169,10 +167,7 @@ def _parse_where_clause(user_input: str) -> Optional[dict]:
         dict or None: Возвращает словарь {столбец : значение} или None при
             ошибках синтаксиса.
     """
-    if not (where_clause_parts := _tokenize(user_input)):
-        return None
-
-    match where_clause_parts:
+    match _tokenize(user_input):
         case [*_, Keyword.WHERE, column, "=", raw_value]:
             if (value := _convert_token(raw_value)) is not None:
                 return {column: value}
@@ -191,10 +186,7 @@ def _parse_set_clause(user_input: str) -> Optional[dict]:
         dict or None: Возвращает словарь {столбец : значение} или None при
             ошибках синтаксиса.
     """
-    if not (set_clause_parts := _tokenize(user_input)):
-        return None
-
-    match set_clause_parts:
+    match _tokenize(user_input):
         case [_, _, Keyword.SET, column, "=", raw_value, *_]:
             if (value := _convert_token(raw_value)) is not None:
                 return {column: value}
@@ -230,9 +222,8 @@ def parse_command(user_input: str) -> Optional[str | tuple]:
         case [Command.CREATE_TABLE as cmd, table_name, *columns]:
             return cmd, table_name, columns
         case [Command.INSERT as cmd, Keyword.INTO, table_name, *_]:
-            if (values := _parse_values_clause(user_input)) is None:
-                return None
-            return cmd, table_name, values
+            if (values := _parse_values_clause(user_input)) is not None:
+                return cmd, table_name, values
         case [Command.SELECT as cmd, Keyword.FROM, table_name]:
             return cmd, table_name, None
         case [Command.SELECT as cmd, Keyword.FROM, table_name, *_]:
