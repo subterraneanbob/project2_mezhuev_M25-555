@@ -76,7 +76,9 @@ def _filter_ids(table_data: dict, where_clause: dict) -> list:
 
 
 @handle_db_errors
-def create_table(metadata: dict, table_name: str, columns: Iterable[str]) -> dict:
+def create_table(
+    metadata: dict, table_name: str, columns: Iterable[str]
+) -> dict | None:
     """
     Добавляет новую таблицу с указанными столбцами в словарь метаданных, если
     таблицы с таким именем не существует. Столбец "ID:int" будет добавлен
@@ -92,16 +94,17 @@ def create_table(metadata: dict, table_name: str, columns: Iterable[str]) -> dic
         columns (Iterable[str]): Список столбцов в виде "название:тип_данных"
 
     Returns:
-        dict: Обновлённый словарь метаданных.
+        dict (optional): Обновлённый словарь метаданных или None, если таблица
+        не была создана.
     """
 
     if not table_name:
         print(f'Ошибка: Недопустимое имя таблицы "{table_name}".')
-        return metadata
+        return None
 
     if table_name in metadata:
         print(f'Ошибка: Таблица "{table_name}" уже существует.')
-        return metadata
+        return None
 
     table_metadata = {ID_COLUMN_NAME: ID_COLUMN_DATA_TYPE_STR}
 
@@ -110,7 +113,7 @@ def create_table(metadata: dict, table_name: str, columns: Iterable[str]) -> dic
 
         if data_type not in SUPPORTED_DATA_TYPES:
             print(f'Некорректное значение: "{column}". Попробуйте снова.')
-            return metadata
+            return None
 
         # Столбец ID всегда добавляется автоматически, даже если указан явно
         if name == ID_COLUMN_NAME:
@@ -131,7 +134,7 @@ def create_table(metadata: dict, table_name: str, columns: Iterable[str]) -> dic
 
 @handle_db_errors
 @confirm_action(DROP_TABLE_ACTION)
-def drop_table(metadata: dict, table_name: str) -> dict:
+def drop_table(metadata: dict, table_name: str) -> dict | None:
     """
     Удаляет информацию о таблице из метаданных. Если таблицы не существует,
     выводит ошибку.
@@ -140,7 +143,8 @@ def drop_table(metadata: dict, table_name: str) -> dict:
         metadata (dict): Текущие метаданные
         table_name (str): Название таблицы для удаления
     Returns:
-        dict: Обновлённый словарь метаданных.
+        dict (optional): Обновлённый словарь метаданных или None, если таблица
+        не была удалена.
     """
 
     del metadata[table_name]
@@ -170,7 +174,7 @@ def insert(
     table_name: str,
     table_data: dict,
     values: Iterable[int | str | bool],
-) -> dict:
+) -> dict | None:
     """
     Добавляет новую запись в таблицу, если она существует. Перед добавлением
     производится проверка значений на соответствие схеме таблицы. Значение для
@@ -182,7 +186,8 @@ def insert(
         table_data (dict): Текущие данные таблицы
         values (Iterable[int or str or bool]): Новые значения для добавления
     Returns:
-        dict: Обновлённые данные таблицы.
+        dict (optional): Обновлённые данные таблицы или None, если вставка новых
+        данных не была произведена.
     """
 
     table_metadata = metadata[table_name]
@@ -190,11 +195,11 @@ def insert(
 
     if len(values) != len(columns):
         print("Ошибка: Передано неверное количество значений.")
-        return table_data
+        return None
 
     new_entry = dict(zip(columns, values))
     if not _check_clause(metadata, table_name, new_entry, show_column_index=True):
-        return table_data
+        return None
 
     new_id = (
         max(ID_COLUMN_DATA_TYPE(key) for key in table_data.keys()) + 1
@@ -258,7 +263,7 @@ def update(
     table_data: dict,
     set_clause: dict,
     where_clause: dict,
-) -> dict:
+) -> dict | None:
     """
     Обновляет существующие записи в указанной таблице, выбирая их по условию.
     Если попытаться обновить первичный ключ, выводит ошибку.
@@ -270,18 +275,19 @@ def update(
         set_clause (dict): Столбцы, которые нужно обновить, со значениями
         where_clause (dict): Условия для выбора записей для обновления.
     Returns:
-        dict: Обновлённые данные таблицы.
+        dict (optional): Обновлённые данные таблицы или None, если данные не
+        обновились.
     """
 
     if ID_COLUMN_NAME in set_clause:
         print(f"Ошибка: значение первичного ключа {ID_COLUMN_NAME} нельзя обновить.")
-        return table_data
+        return None
 
     if any(
         not _check_clause(metadata, table_name, clause)
         for clause in (set_clause, where_clause)
     ):
-        return table_data
+        return None
 
     for key in _filter_ids(table_data, where_clause):
         table_data[key] |= set_clause
@@ -297,7 +303,7 @@ def delete(
     table_name: str,
     table_data: dict,
     where_clause: dict,
-) -> dict:
+) -> dict | None:
     """
     Удаляет записи из указанной таблицы по условию.
 
@@ -307,11 +313,12 @@ def delete(
         table_data (dict): Текущие данные таблицы
         where_clause (dict): Условия для выбора записей для обновления.
     Returns:
-        dict: Обновлённые данные таблицы.
+        dict (optional): Обновлённые данные таблицы или None, если удаление
+        не было произведено.
     """
 
     if not _check_clause(metadata, table_name, where_clause):
-        return table_data
+        return None
 
     for key in _filter_ids(table_data, where_clause):
         del table_data[key]
