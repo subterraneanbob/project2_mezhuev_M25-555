@@ -2,7 +2,6 @@ import prompt
 
 from .constants import DATA_COMMANDS, OTHER_COMMANDS, TABLE_COMMANDS, Command
 from .core import (
-    create_cacher,
     create_table,
     delete,
     drop_table,
@@ -12,6 +11,7 @@ from .core import (
     select,
     update,
 )
+from .decorators import create_cacher
 from .parser import parse_command
 from .utils import load_metadata, load_table_data, save_metadata, save_table_data
 

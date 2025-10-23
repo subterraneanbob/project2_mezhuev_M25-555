@@ -340,27 +340,3 @@ def info(metadata: dict, table_name: str, table_data: dict):
     print(f"Таблица: {table_name}")
     print(f"Столбцы: {columns}")
     print(f"Количество записей: {len(table_data)}")
-
-
-def create_cacher():
-    """
-    Создаёт функцию для кэширования, которая принимает ключ и функцию для
-    генерации значения, если по ключу в кэше нет данных. Также добавляет
-    атрибут для очистки всего кэша (invalidate).
-    """
-    cached_data = {}
-
-    def cache_result(key, value_func):
-        if key in cached_data:
-            return cached_data[key]
-
-        value = value_func()
-        cached_data[key] = value
-
-        return value
-
-    def invalidate():
-        cached_data.clear()
-
-    cache_result.invalidate = invalidate
-    return cache_result
