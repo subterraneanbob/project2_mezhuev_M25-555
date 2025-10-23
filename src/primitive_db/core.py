@@ -111,7 +111,7 @@ def create_table(
     for column in columns:
         name, _, data_type = map(str.strip, column.partition(":"))
 
-        if data_type not in SUPPORTED_DATA_TYPES:
+        if not name or data_type not in SUPPORTED_DATA_TYPES:
             print(f'Некорректное значение: "{column}". Попробуйте снова.')
             return None
 
