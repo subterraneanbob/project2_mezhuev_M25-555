@@ -50,28 +50,41 @@ DELETE_ACTION = "удаление записей"
 
 PLUS_MINUS = "+-"
 
-DATA_COMMANDS = {
-    f"{Command.INSERT} {Keyword.INTO} <имя_таблицы> {Keyword.VALUES} "
-    "(<значение1>, <значение2>, ...)": "создать запись",
-    f"{Command.SELECT} {Keyword.FROM} <имя_таблицы> {Keyword.WHERE}"
-    " <столбец> = <значение>": "прочитать записи по условию",
-    f"{Command.SELECT} {Keyword.FROM} <имя_таблицы>": "прочитать все записи",
-    f"{Command.UPDATE} <имя_таблицы> {Keyword.SET} <столбец> = <новое_значение> "
-    f"{Keyword.WHERE} <столбец_условия> = <значение_условия>": "обновить запись",
-    f"{Command.DELETE} {Keyword.FROM} <имя_таблицы> {Keyword.WHERE} "
-    "<столбец> = <значение>": "удалить запись",
-}
-
-TABLE_COMMANDS = {
+DATA_COMMANDS_REFERENCE = (
     (
-        f"{Command.CREATE_TABLE} <имя_таблицы> <столбец1:тип> <столбец2:тип> .."
-    ): "создать таблицу",
-    f"{Command.DROP_TABLE} <имя_таблицы>": "удалить таблицу",
-    Command.LIST_TABLES: "показать список всех таблиц",
-    f"{Command.INFO} <имя_таблицы>": "вывести информацию о таблице",
-}
+        f"{Command.INSERT} {Keyword.INTO} <имя_таблицы> {Keyword.VALUES} "
+        "(<значение1>, <значение2>, ...)",
+        "создать запись",
+    ),
+    (
+        f"{Command.SELECT} {Keyword.FROM} <имя_таблицы> {Keyword.WHERE}"
+        " <столбец> = <значение>",
+        "прочитать записи по условию",
+    ),
+    (f"{Command.SELECT} {Keyword.FROM} <имя_таблицы>", "прочитать все записи"),
+    (
+        f"{Command.UPDATE} <имя_таблицы> {Keyword.SET} <столбец> = <новое_значение> "
+        f"{Keyword.WHERE} <столбец_условия> = <значение_условия>",
+        "обновить запись",
+    ),
+    (
+        f"{Command.DELETE} {Keyword.FROM} <имя_таблицы> {Keyword.WHERE} "
+        "<столбец> = <значение>",
+        "удалить запись",
+    ),
+)
 
-OTHER_COMMANDS = {
-    Command.EXIT: "выход из программы",
-    Command.HELP: "справочная информация",
-}
+TABLE_COMMANDS_REFERENCE = (
+    (
+        f"{Command.CREATE_TABLE} <имя_таблицы> <столбец1:тип> <столбец2:тип> ..",
+        "создать таблицу",
+    ),
+    (f"{Command.DROP_TABLE} <имя_таблицы>", "удалить таблицу"),
+    (Command.LIST_TABLES, "показать список всех таблиц"),
+    (f"{Command.INFO} <имя_таблицы>", "вывести информацию о таблице"),
+)
+
+OTHER_COMMANDS_REFERENCE = (
+    (Command.EXIT, "выход из программы"),
+    (Command.HELP, "справочная информация"),
+)

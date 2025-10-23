@@ -1,6 +1,11 @@
 import prompt
 
-from .constants import DATA_COMMANDS, OTHER_COMMANDS, TABLE_COMMANDS, Command
+from .constants import (
+    DATA_COMMANDS_REFERENCE,
+    OTHER_COMMANDS_REFERENCE,
+    TABLE_COMMANDS_REFERENCE,
+    Command,
+)
 from .core import (
     create_table,
     delete,
@@ -34,15 +39,15 @@ def print_help():
     """Печатает справочную информацию по работе с программой."""
 
     print("\nКоманды для операций с данными:")
-    for command, description in DATA_COMMANDS.items():
+    for command, description in DATA_COMMANDS_REFERENCE:
         print(f"<command> {command} - {description}")
 
     print("\nКоманды для работы с таблицами:")
-    for command, description in TABLE_COMMANDS.items():
+    for command, description in TABLE_COMMANDS_REFERENCE:
         print(f"<command> {command} - {description}")
 
     print("\nОбщие команды:")
-    for command, description in OTHER_COMMANDS.items():
+    for command, description in OTHER_COMMANDS_REFERENCE:
         print(f"<command> {command} - {description}")
 
 
