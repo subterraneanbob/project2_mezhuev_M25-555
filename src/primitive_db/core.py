@@ -192,6 +192,7 @@ def insert(
 
     table_metadata = metadata[table_name]
     columns = [column for column in table_metadata if column != ID_COLUMN_NAME]
+    values = list(values)
 
     if len(values) != len(columns):
         print("Ошибка: Передано неверное количество значений.")
